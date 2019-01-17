@@ -1,0 +1,568 @@
+
+
+## ---- EVALUACIÓN DE MODELOS DE APRENDIZAJE NO SUPERVISADO PARA EL ANÁLISIS DE CONTENIDO DE TWEETS GENERADOS ANTE UN DESASTRE ---##
+##--------- El siguiente script muestra el proceso utilizado para el análisis de los resultados arrojados en LDA------------------##
+
+
+#importar librerias
+library(bitops)
+library(RCurl)
+library(twitteR)
+library(tm)
+library(Rcpp)
+library(RColorBrewer)
+library(wordcloud)
+library(readr)
+library(ggplot2)
+library(base)
+library(cluster)
+##-------------------------------------------------------------------------
+
+#' paso 1: importar el data frame del resultado de lda y el resultado de modelGibbs
+
+#paso 2: Observamos el Top 10 de terminos más frecuentes por cluster:
+
+toptentermpertopic<- terms(modelGibbs,10)
+
+write.csv (
+  terms
+  (modelGibbs,50), "myTopicModelData.csv")
+
+#' paso 3: crear los grupos obtenidos del res$clustering dependiendo los grupos que salieron
+
+grupo1 = datosFinlda[datosFinlda$t==1,]
+grupo2 = datosFinlda[datosFinlda$t==2,]
+grupo3 = datosFinlda[datosFinlda$t==3,]
+grupo4 = datosFinlda[datosFinlda$t==4,]
+grupo5 = datosFinlda[datosFinlda$t==5,]
+grupo6 = datosFinlda[datosFinlda$t==6,]
+grupo7 = datosFinlda[datosFinlda$t==7,]
+grupo8 = datosFinlda[datosFinlda$t==8,]
+grupo9 = datosFinlda[datosFinlda$t==9,]
+grupo10 = datosFinlda[datosFinlda$t==10,]
+grupo11 = datosFinlda[datosFinlda$t==11,]
+grupo12 = datosFinlda[datosFinlda$t==12,]
+grupo13 = datosFinlda[datosFinlda$t==13,]
+grupo14 = datosFinlda[datosFinlda$t==14,]
+grupo15 = datosFinlda[datosFinlda$t==15,]
+grupo16 = datosFinlda[datosFinlda$t==16,]
+grupo17 = datosFinlda[datosFinlda$t==17,]
+grupo18 = datosFinlda[datosFinlda$t==18,]
+grupo19 = datosFinlda[datosFinlda$t==19,]
+
+g1 <- grupo1$textolimpiadolda
+g2 <- grupo2$textolimpiadolda
+g3 <- grupo3$textolimpiadolda
+g4 <- grupo4$textolimpiadolda
+g5 <- grupo5$textolimpiadolda
+g6 <- grupo6$textolimpiadolda
+g7 <- grupo7$textolimpiadolda
+g8 <- grupo8$textolimpiadolda
+g9 <- grupo9$textolimpiadolda
+g10 <- grupo10$textolimpiadolda
+g11 <- grupo11$textolimpiadolda
+g12 <- grupo12$textolimpiadolda
+g13 <- grupo13$textolimpiadolda
+g14 <- grupo14$textolimpiadolda
+g15 <- grupo15$textolimpiadolda
+g16 <- grupo16$textolimpiadolda
+g17 <- grupo17$textolimpiadolda
+g18 <- grupo18$textolimpiadolda
+g19 <- grupo19$textolimpiadolda
+
+##-------------------------------------------------------------------------
+
+#' paso 4: se construye un corpus para cada grupo
+
+corpus1 <- Corpus(VectorSource(g1))
+corpus2 <- Corpus(VectorSource(g2))
+corpus3 <- Corpus(VectorSource(g3))
+corpus4 <- Corpus(VectorSource(g4))
+corpus5 <- Corpus(VectorSource(g5))
+corpus6 <- Corpus(VectorSource(g6))
+corpus7 <- Corpus(VectorSource(g7))
+corpus8 <- Corpus(VectorSource(g8))
+corpus9 <- Corpus(VectorSource(g9))
+corpus10<- Corpus(VectorSource(g10))
+corpus11<- Corpus(VectorSource(g11))
+corpus12<- Corpus(VectorSource(g12))
+corpus13<- Corpus(VectorSource(g13))
+corpus14<- Corpus(VectorSource(g14))
+corpus15<- Corpus(VectorSource(g15))
+corpus16<- Corpus(VectorSource(g16))
+corpus17<- Corpus(VectorSource(g17))
+corpus18<- Corpus(VectorSource(g18))
+corpus19<- Corpus(VectorSource(g19))
+
+palabras.eliminar<-c("california","via", "amp")
+wordstodelete<-read.csv("C:/Users/NICOLAS/preprocesamiento/wordstodelete.csv")
+
+
+# 5.1 removemos stopwords en español, palabras especificas y hacemos stemming
+corpus1 <- tm_map(corpus1, removeWords, stopwords("english"))
+corpus1 <- tm_map(corpus1, removeWords, palabras.eliminar)
+corpus1 <- tm_map(corpus1, stemDocument,language = "english")
+corpus1 <- tm_map(corpus1, stripWhitespace)
+corpus1 <- tm_map(corpus1, removeWords, wordstodelete$a)
+
+corpus2 <- tm_map(corpus2, removeWords, stopwords("english"))
+corpus2 <- tm_map(corpus2, removeWords, palabras.eliminar)
+corpus2 <- tm_map(corpus2, stemDocument,language = "english")
+corpus2 <- tm_map(corpus2, stripWhitespace)
+corpus2 <- tm_map(corpus2, removeWords, wordstodelete$a)
+
+corpus3 <- tm_map(corpus3, removeWords, stopwords("english"))
+corpus3 <- tm_map(corpus3, removeWords, palabras.eliminar)
+corpus3 <- tm_map(corpus3, stemDocument,language = "english")
+corpus3 <- tm_map(corpus3, stripWhitespace)
+corpus3 <- tm_map(corpus3, removeWords, wordstodelete$a)
+
+corpus4 <- tm_map(corpus4, removeWords, stopwords("english"))
+corpus4 <- tm_map(corpus4, removeWords, palabras.eliminar)
+corpus4 <- tm_map(corpus4, stemDocument,language = "english")
+corpus4 <- tm_map(corpus4, stripWhitespace)
+corpus4 <- tm_map(corpus4, removeWords, wordstodelete$a)
+
+corpus5 <- tm_map(corpus5, removeWords, stopwords("english"))
+corpus5 <- tm_map(corpus5, removeWords, palabras.eliminar)
+corpus5 <- tm_map(corpus5, stemDocument,language = "english")
+corpus5 <- tm_map(corpus5, stripWhitespace)
+corpus5 <- tm_map(corpus5, removeWords,wordstodelete$a)
+
+corpus6 <- tm_map(corpus6, removeWords, stopwords("english"))
+corpus6 <- tm_map(corpus6, removeWords, palabras.eliminar)
+corpus6 <- tm_map(corpus6, stemDocument,language = "english")
+corpus6 <- tm_map(corpus6, stripWhitespace)
+corpus6 <- tm_map(corpus6, removeWords, wordstodelete$a)
+
+corpus7 <- tm_map(corpus7, removeWords, stopwords("english"))
+corpus7 <- tm_map(corpus7, removeWords, palabras.eliminar)
+corpus7 <- tm_map(corpus7, stemDocument,language = "english")
+corpus7 <- tm_map(corpus7, stripWhitespace)
+corpus7 <- tm_map(corpus7, removeWords, wordstodelete$a)
+
+corpus8 <- tm_map(corpus8, removeWords, stopwords("english"))
+corpus8 <- tm_map(corpus8, removeWords, palabras.eliminar)
+corpus8 <- tm_map(corpus8, stemDocument,language = "english")
+corpus8<- tm_map(corpus8, stripWhitespace)
+corpus8 <- tm_map(corpus8, removeWords, wordstodelete$a)
+
+corpus9 <- tm_map(corpus9, removeWords, stopwords("english"))
+corpus9 <- tm_map(corpus9, removeWords, palabras.eliminar)
+corpus9 <- tm_map(corpus9, stemDocument,language = "english")
+corpus9 <- tm_map(corpus9, stripWhitespace)
+corpus9 <- tm_map(corpus9, removeWords, wordstodelete$a)
+
+corpus10 <- tm_map(corpus10, removeWords, stopwords("english"))
+corpus10 <- tm_map(corpus10, removeWords, palabras.eliminar)
+corpus10 <- tm_map(corpus10, stemDocument,language = "english")
+corpus10 <- tm_map(corpus10, stripWhitespace)
+corpus10 <- tm_map(corpus10, removeWords, pwordstodelete$a)
+
+corpus11 <- tm_map(corpus11, removeWords, stopwords("english"))
+corpus11 <- tm_map(corpus11, removeWords, palabras.eliminar)
+corpus11 <- tm_map(corpus11, stemDocument,language = "english")
+corpus11 <- tm_map(corpus11, stripWhitespace)
+corpus11 <- tm_map(corpus11, removeWords, wordstodelete$a)
+
+corpus12 <- tm_map(corpus12, removeWords, stopwords("english"))
+corpus12 <- tm_map(corpus12, removeWords, palabras.eliminar)
+corpus12 <- tm_map(corpus12, stemDocument,language = "english")
+corpus12 <- tm_map(corpus12, stripWhitespace)
+corpus12 <- tm_map(corpus12, removeWords, wordstodelete$a)
+
+corpus13 <- tm_map(corpus13, removeWords, stopwords("english"))
+corpus13 <- tm_map(corpus13, removeWords, palabras.eliminar)
+corpus13 <- tm_map(corpus13, stemDocument,language = "english")
+corpus13 <- tm_map(corpus13, stripWhitespace)
+corpus13 <- tm_map(corpus13, removeWords, wordstodelete$a)
+
+corpus14 <- tm_map(corpus14, removeWords, stopwords("english"))
+corpus14 <- tm_map(corpus14, removeWords, palabras.eliminar)
+corpus14 <- tm_map(corpus14, stemDocument,language = "english")
+corpus14 <- tm_map(corpus14, stripWhitespace)
+corpus14 <- tm_map(corpus14, removeWords, wordstodelete$a)
+
+corpus15 <- tm_map(corpus15, removeWords, stopwords("english"))
+corpus15 <- tm_map(corpus15, removeWords, palabras.eliminar)
+corpus15 <- tm_map(corpus15, stemDocument,language = "english")
+corpus15 <- tm_map(corpus15, stripWhitespace)
+corpus15 <- tm_map(corpus15, removeWords, pwordstodelete$a)
+
+corpus16 <- tm_map(corpus16, removeWords, stopwords("english"))
+corpus16 <- tm_map(corpus16, removeWords, palabras.eliminar)
+corpus16 <- tm_map(corpus16, stemDocument,language = "english")
+corpus16 <- tm_map(corpus16, stripWhitespace)
+corpus16 <- tm_map(corpus16, removeWords, wordstodelete$a)
+
+corpus17 <- tm_map(corpus17, removeWords, stopwords("english"))
+corpus17 <- tm_map(corpus17, removeWords, palabras.eliminar)
+corpus17 <- tm_map(corpus17, stemDocument,language = "english")
+corpus17 <- tm_map(corpus17, stripWhitespace)
+corpus17 <- tm_map(corpus17, removeWords, wordstodelete$a)
+
+corpus18<- tm_map(corpus18, removeWords, stopwords("english"))
+corpus18 <- tm_map(corpus18, removeWords, palabras.eliminar)
+corpus18 <- tm_map(corpus18, stemDocument,language = "english")
+corpus18 <- tm_map(corpus18, stripWhitespace)
+corpus18 <- tm_map(corpus18, removeWords, wordstodelete$a)
+
+corpus19<- tm_map(corpus19, removeWords, stopwords("english"))
+corpus19 <- tm_map(corpus19, removeWords, palabras.eliminar)
+corpus19 <- tm_map(corpus19, stemDocument,language = "english")
+corpus19 <- tm_map(corpus19, stripWhitespace)
+corpus19 <- tm_map(corpus19, removeWords, wordstodelete$a)
+
+
+nubepalabras<-wordcloud(corpus1, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus2, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus3, max.words = 20, random.order = F, colors = brewer.pal(name ="Dark2", n = 8))
+nubepalabras<-wordcloud(corpus4, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus5, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus6, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus7, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus8, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus9, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus10, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus11, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus12, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus13, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus14, max.words = 25, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus15, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus16, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus17, max.words = 25, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus18, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus19, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+
+#' paso 4: se crean tdm para cada corpus
+
+tdm1<- TermDocumentMatrix(corpus1)
+tdmat1 <- as.matrix(tdm1)
+palabrastdmat1<- rowSums(tdmat1)
+palabrastdmat1<- sort(x = palabrastdmat1,decreasing = TRUE)
+palabrastdmat1 <- data.frame(palabra = names(palabrastdmat1), frec = palabrastdmat1)
+palabrastdmat1[1:20, ]
+
+tdm2<- TermDocumentMatrix(corpus2)
+tdmat2 <- as.matrix(tdm2)
+palabrastdmat2<- rowSums(tdmat2)
+palabrastdmat2<- sort(x = palabrastdmat2,decreasing = TRUE)
+palabrastdmat2 <- data.frame(palabra = names(palabrastdmat2), frec = palabrastdmat2)
+palabrastdmat2[1:20, ]
+
+tdm3<- TermDocumentMatrix(corpus3)
+tdmat3 <- as.matrix(tdm3)
+palabrastdmat3<- rowSums(tdmat3)
+palabrastdmat3<- sort(x = palabrastdmat3,decreasing = TRUE)
+palabrastdmat3 <- data.frame(palabra = names(palabrastdmat3), frec = palabrastdmat3)
+palabrastdmat3[1:20, ]
+
+tdm4<- TermDocumentMatrix(corpus4)
+tdmat4 <- as.matrix(tdm4)
+palabrastdmat4<- rowSums(tdmat4)
+palabrastdmat4<- sort(x = palabrastdmat4,decreasing = TRUE)
+palabrastdmat4 <- data.frame(palabra = names(palabrastdmat4), frec = palabrastdmat4)
+palabrastdmat4[1:20, ]
+
+tdm5<- TermDocumentMatrix(corpus5)
+tdmat5 <- as.matrix(tdm5)
+palabrastdmat5<- rowSums(tdmat5)
+palabrastdmat5<- sort(x = palabrastdmat5,decreasing = TRUE)
+palabrastdmat5 <- data.frame(palabra = names(palabrastdmat5), frec = palabrastdmat5)
+palabrastdmat5[1:20, ]
+
+tdm6<- TermDocumentMatrix(corpus6)
+tdmat6 <- as.matrix(tdm6)
+palabrastdmat6<- rowSums(tdmat6)
+palabrastdmat6<- sort(x = palabrastdmat6,decreasing = TRUE)
+palabrastdmat6 <- data.frame(palabra = names(palabrastdmat6), frec = palabrastdmat6)
+palabrastdmat6[1:20, ]
+
+tdm7<- TermDocumentMatrix(corpus7)
+tdmat7 <- as.matrix(tdm7)
+palabrastdmat7<- rowSums(tdmat7)
+palabrastdmat7<- sort(x = palabrastdmat7,decreasing = TRUE)
+palabrastdmat7 <- data.frame(palabra = names(palabrastdmat7), frec = palabrastdmat7)
+palabrastdmat7[1:20, ]
+
+tdm8<- TermDocumentMatrix(corpus8)
+tdmat8 <- as.matrix(tdm8)
+palabrastdmat8<- rowSums(tdmat8)
+palabrastdmat8<- sort(x = palabrastdmat8,decreasing = TRUE)
+palabrastdmat8 <- data.frame(palabra = names(palabrastdmat8), frec = palabrastdmat8)
+palabrastdmat8[1:20, ]
+
+tdm9<- TermDocumentMatrix(corpus9)
+tdmat9 <- as.matrix(tdm9)
+palabrastdmat9<- rowSums(tdmat9)
+palabrastdmat9<- sort(x = palabrastdmat9,decreasing = TRUE)
+palabrastdmat9 <- data.frame(palabra = names(palabrastdmat9), frec = palabrastdmat9)
+palabrastdmat9[1:20, ]
+
+tdm10<- TermDocumentMatrix(corpus10)
+tdmat10 <- as.matrix(tdm10)
+palabrastdmat10<- rowSums(tdmat10)
+palabrastdmat10<- sort(x = palabrastdmat10,decreasing = TRUE)
+palabrastdmat10 <- data.frame(palabra = names(palabrastdmat10), frec = palabrastdmat10)
+palabrastdmat10[1:20, ]
+
+tdm11<- TermDocumentMatrix(corpus11)
+tdmat11 <- as.matrix(tdm11)
+palabrastdmat11<- rowSums(tdmat11)
+palabrastdmat11<- sort(x = palabrastdmat11,decreasing = TRUE)
+palabrastdmat11 <- data.frame(palabra = names(palabrastdmat11), frec = palabrastdmat11)
+palabrastdmat11[1:20, ]
+
+
+tdm12<- TermDocumentMatrix(corpus12)
+tdmat12 <- as.matrix(tdm12)
+palabrastdmat12<- rowSums(tdmat12)
+palabrastdmat12<- sort(x = palabrastdmat12,decreasing = TRUE)
+palabrastdmat12 <- data.frame(palabra = names(palabrastdmat12), frec = palabrastdmat12)
+palabrastdmat12[1:20, ]
+
+tdm13<- TermDocumentMatrix(corpus13)
+tdmat13 <- as.matrix(tdm13)
+palabrastdmat13<- rowSums(tdmat13)
+palabrastdmat13<- sort(x = palabrastdmat13,decreasing = TRUE)
+palabrastdmat13 <- data.frame(palabra = names(palabrastdmat13), frec = palabrastdmat13)
+palabrastdmat13[1:20, ]
+
+tdm14<- TermDocumentMatrix(corpus14)
+tdmat14 <- as.matrix(tdm14)
+palabrastdmat14<- rowSums(tdmat14)
+palabrastdmat14<- sort(x = palabrastdmat14,decreasing = TRUE)
+palabrastdmat14 <- data.frame(palabra = names(palabrastdmat14), frec = palabrastdmat14)
+palabrastdmat14[1:20, ]
+
+tdm15<- TermDocumentMatrix(corpus15)
+tdmat15 <- as.matrix(tdm15)
+palabrastdmat15<- rowSums(tdmat15)
+palabrastdmat15<- sort(x = palabrastdmat15,decreasing = TRUE)
+palabrastdmat15 <- data.frame(palabra = names(palabrastdmat15), frec = palabrastdmat15)
+palabrastdmat15[1:20, ]
+
+tdm16<- TermDocumentMatrix(corpus16)
+tdmat16 <- as.matrix(tdm16)
+palabrastdmat16<- rowSums(tdmat16)
+palabrastdmat16<- sort(x = palabrastdmat16,decreasing = TRUE)
+palabrastdmat16 <- data.frame(palabra = names(palabrastdmat16), frec = palabrastdmat16)
+palabrastdmat16[1:20, ]
+
+tdm17<- TermDocumentMatrix(corpus17)
+tdmat17 <- as.matrix(tdm17)
+palabrastdmat17<- rowSums(tdmat17)
+palabrastdmat17<- sort(x = palabrastdmat17,decreasing = TRUE)
+palabrastdmat17 <- data.frame(palabra = names(palabrastdmat17), frec = palabrastdmat17)
+palabrastdmat17[1:20, ]
+
+tdm18<- TermDocumentMatrix(corpus18)
+tdmat18 <- as.matrix(tdm18)
+palabrastdmat18<- rowSums(tdmat18)
+palabrastdmat18<- sort(x = palabrastdmat18,decreasing = TRUE)
+palabrastdmat18 <- data.frame(palabra = names(palabrastdmat18), frec = palabrastdmat18)
+palabrastdmat18[1:20, ]
+
+tdm19<- TermDocumentMatrix(corpus19)
+tdmat19 <- as.matrix(tdm19)
+palabrastdmat19<- rowSums(tdmat19)
+palabrastdmat19<- sort(x = palabrastdmat19,decreasing = TRUE)
+palabrastdmat19 <- data.frame(palabra = names(palabrastdmat19), frec = palabrastdmat19)
+palabrastdmat19[1:20, ]
+
+#Paso 5: obtener histogramas
+grafico1 <- ggplot(subset(palabrastdmat1, frec >= 30), aes(palabra, frec))
+grafico1 <- 
+  grafico1 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico1 <-   grafico1 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico1
+
+
+grafico2 <- ggplot(subset(palabrastdmat2, frec >= 58), aes(palabra, frec))
+grafico2 <-
+  grafico2 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico2 <-
+  grafico2 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1  ))
+grafico2
+
+
+
+grafico3 <- ggplot(subset(palabrastdmat3, frec >= 20), aes(palabra, frec))
+grafico3 <-
+  grafico3 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico3 <-
+  grafico3 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1   ))
+grafico3
+
+
+grafico4 <- ggplot(subset(palabrastdmat4, frec >= 35), aes(palabra, frec))
+grafico4 <- 
+  grafico4 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico4 <-   grafico4 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico4
+
+grafico5 <- ggplot(subset(palabrastdmat5, frec >= 25), aes(palabra, frec))
+grafico5 <- 
+  grafico5 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico5 <-   grafico5 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico5
+
+grafico6 <- ggplot(subset(palabrastdmat6, frec >= 30), aes(palabra, frec))
+grafico6 <- 
+  grafico6 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico6 <-   grafico6 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico6
+
+grafico7 <- ggplot(subset(palabrastdmat7, frec >= 30), aes(palabra, frec))
+grafico7 <- 
+  grafico7 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico7 <-   grafico7 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico7
+
+grafico8 <- ggplot(subset(palabrastdmat8, frec >= 20), aes(palabra, frec))
+grafico8 <- 
+  grafico8 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico8 <-   grafico8 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico8
+
+grafico9 <- ggplot(subset(palabrastdmat9, frec >= 19), aes(palabra, frec))
+grafico9 <- 
+  grafico9 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico9 <-   grafico9 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico9
+
+grafico10 <- ggplot(subset(palabrastdmat10, frec >= 18), aes(palabra, frec))
+grafico10 <- 
+  grafico10 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico10 <-   grafico10 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico10
+
+grafico11 <- ggplot(subset(palabrastdmat11, frec >= 20), aes(palabra, frec))
+grafico11 <- 
+  grafico11 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico11 <-   grafico11 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico11
+
+grafico12 <- ggplot(subset(palabrastdmat12, frec >= 35), aes(palabra, frec))
+grafico12 <- 
+  grafico12 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico12 <-   grafico12 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico12
+
+grafico13 <- ggplot(subset(palabrastdmat13, frec >= 16), aes(palabra, frec))
+grafico13 <- 
+  grafico13 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico13 <-   grafico13 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico13
+
+grafico14 <- ggplot(subset(palabrastdmat14, frec >= 21), aes(palabra, frec))
+grafico14 <- 
+  grafico14 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico14 <-   grafico14 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico14
+
+grafico15 <- ggplot(subset(palabrastdmat15, frec >= 15), aes(palabra, frec))
+grafico15 <- 
+  grafico15 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico15 <-   grafico15 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico15
+
+grafico16<- ggplot(subset(palabrastdmat16, frec >= 16), aes(palabra, frec))
+grafico16 <- 
+  grafico16 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico16 <-   grafico16 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico16
+
+grafico17 <- ggplot(subset(palabrastdmat17, frec >= 12), aes(palabra, frec))
+grafico17 <- 
+  grafico17 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico17 <-   grafico17 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico17
+
+grafico18 <- ggplot(subset(palabrastdmat18, frec >= 65), aes(palabra, frec))
+grafico18 <- 
+  grafico18 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico18 <-   grafico18 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico18
+
+grafico19 <- ggplot(subset(palabrastdmat19, frec >= 12), aes(palabra, frec))
+grafico19 <- 
+  grafico19 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                       I("black")))
+grafico19 <-   grafico19 + theme(axis.text.x = element_text(
+  size = rel(2),
+  angle = 45,
+  hjust = 1  ))
+grafico19
