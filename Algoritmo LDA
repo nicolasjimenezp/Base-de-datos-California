@@ -1,0 +1,130 @@
+
+## ---- EVALUACIÓN DE MODELOS DE APRENDIZAJE NO SUPERVISADO PARA EL ANÁLISIS DE CONTENIDO DE TWEETS GENERADOS ANTE UN DESASTRE ---##
+##-----------------------El siguiente script muestra el proceso utilizado para la ejecución del algoritmo LDA---------------------##
+
+
+library(factoextra)
+library(bitops)
+library(RCurl)
+library(twitteR)
+library(NLP)
+library(tm)
+library(ggplot2)
+library(Rcpp)
+library(RColorBrewer)
+library(readr)
+library(base)
+library(cluster)
+library(NbClust)
+library(wordcloud)
+library(SnowballC)
+library(topicmodels)
+library(Rmpfr)
+
+
+#Paso 1: cargamos textoclean del archivo de preprocesamiento.
+load("C:/Users/NICOLAS/preprocesamiento/textoclean.Rdata")
+
+#Paso 2: construimos el corpus
+corpus <- Corpus(VectorSource(textoclean)) #Ver archivo Tm
+View(head(corpus))
+
+#' paso 3: tokenizar los corpus, contruimos el DTM con peso TF
+
+palabras.eliminar<-c("california","via", "amp")
+wordstodelete<-read.csv("C:/Users/NICOLASpreprocesamiento/wordstodelete.csv")
+
+# 3.1 removemos stopwords en español, palabras especificas y hacemos stemming
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, removeWords, palabras.eliminar)
+corpus <- tm_map(corpus, stemDocument,language = "english")
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeWords, wordstodelete$a)
+
+#dtm <-  DocumentTermMatrix(corpus)
+dtm <-
+  DocumentTermMatrix(corpus)
+
+ui = unique(dtm$i)
+dtm.new = dtm[ui,]
+inspect(dtm.new)
+save(dtm.new, file =  "dtmldacalifornia.Rdata")
+
+#Pasamos el dtm como matriz
+dtmatrix <- as.matrix(dtm.new)
+save(dtmatrix,file = "dtmmatrizldacalifornia.Rdata")
+
+##Paso 4: Determinar k
+
+k = 20
+burnin = 1000
+iter = 1000
+keep = 50
+
+sequ <- seq(2, 50, 1) #generar muchos topic models con diferente k desde 2 a 50 de 1 en 1 
+
+#ecuación de máxima verosimilitud
+harmonicMean <- function(logLikelihoods, precision=2000L) {
+  llMed <- Rmpfr::median(logLikelihoods)
+  as.double(llMed - log(Rmpfr::mean(exp(-Rmpfr::mpfr(logLikelihoods, prec = precision) + llMed))))
+}
+
+#hay que usar dtm con term frequency weighting
+
+fitted_many <- lapply(sequ, function(k) LDA(dtmatrix, k = k, method = "Gibbs",control = list(burnin = burnin, iter = iter, keep = keep) ))
+
+# extract logliks from each topic
+logLiks_many <- lapply(fitted_many, function(L)  L@logLiks[-c(1:(burnin/keep))])
+
+# compute harmonic means
+hm_many <- sapply(logLiks_many, function(h) harmonicMean(h))
+
+# Graficamos los resultados
+plot(sequ, hm_many, type = "l")
+
+# Miramos el resultado del numero de clusters óptimo
+kopt<-sequ[which.max(hm_many)]
+kopt
+save(kopt,file = "koptimoldacalifornia.Rdata")
+
+# Paso 5: Ejecutamos el algoritmo
+
+SEED = 345  # seleccionamos una semilla al azar
+
+modelGibbs <- LDA(dtmatrix, k = kopt, method = "Gibbs", control = list(seed = SEED, burnin = 1000,
+                                                                       thin = 100,    iter = 1000))
+modelGibbs
+save(modelGibbs,file = "resldacalifornia.Rdata")
+t<-topics(modelGibbs)
+t
+
+#Paso 6: Exportamos los resultados:
+
+textoclean2 = textoclean
+textoclean2 = as.character(unlist(textoclean2))
+textolimpiadolda = textoclean2[as.numeric(rownames(x = dtmatrix))]
+class(textolimpiadolda)<- "character"
+datosFinlda =data.frame(textolimpiadolda, t)
+save(datosFinlda,file = "Resultadolda en data framecalifornia.Rdata")
+
+write.table(
+  x= datosFinlda,
+  file = "clusteringldacalifornia.csv",
+  col.names = TRUE,
+  row.names = FALSE,
+  sep = "/"
+)
+
+
+topicsProb <- topics(modelGibbs,1)
+topic1tweets<- which (topicsProb==1)
+topic1tweetstext<-as.list(textolimpiadolda[topic1tweets])
+
+write.csv (
+  topic1tweetstext, "ppp.csv")
+
+probabilidadtweets1= data.frame(topic1tweets)
+
+
+
+
