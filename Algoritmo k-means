@@ -2,7 +2,7 @@
 ## El siguiente script muestra el proceso utilizado para la ejución del algoritmo K-means
 
 
-#Paso 1: importamos el data frame elaborado en la etapa de preprocesamiento
+#Paso 1: importamos el data frame elaborado en la etapa de preprocesamiento y el textoclean
 
 # Paso 2: determinamos el número óptimo de Clusters:
 #Silhouette method
