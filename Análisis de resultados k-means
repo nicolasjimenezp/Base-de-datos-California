@@ -1,0 +1,156 @@
+
+## ---- EVALUACIÓN DE MODELOS DE APRENDIZAJE NO SUPERVISADO PARA EL ANÁLISIS DE CONTENIDO DE TWEETS GENERADOS ANTE UN DESASTRE ---##
+##----- El siguiente script muestra el proceso utilizado para el análisis de los resultados arrojados en K-means------------------##
+
+rm(list = ls())
+
+#importar librerias
+library(bitops)
+library(RCurl)
+library(twitteR)
+library(tm)
+library(Rcpp)
+library(RColorBrewer)
+library(wordcloud)
+library(readr)
+library(ggplot2)
+library(base)
+library(cluster)
+##-------------------------------------------------------------------------
+
+#' paso 1: importar el data frame del resultado de kmeans
+load("C:/Users/Nicolás/Resultadokmeans en data frame3.Rdata")
+
+#' paso 2: crear los grupos obtenidos del res$clustering dependiendo los grupos que salieron
+
+grupo1 = datosFin[datosFin$res.cluster==1,]
+grupo2 = datosFin[datosFin$res.cluster==2,]
+grupo3 = datosFin[datosFin$res.cluster==3,]
+grupo4 = datosFin[datosFin$res.cluster==4,]
+
+g1 <- grupo1$textolimpiado
+g2 <- grupo2$textolimpiado
+g3 <- grupo3$textolimpiado
+g4 <- grupo4$textolimpiado
+
+##-------------------------------------------------------------------------
+
+#' paso 3: se construye un corpus para cada grupo
+
+corpus1 <- Corpus(VectorSource(g1))
+corpus2 <- Corpus(VectorSource(g2))
+corpus3 <- Corpus(VectorSource(g3))
+corpus4 <- Corpus(VectorSource(g4))
+
+# paso 4: Se limpian los datos de nuevo
+
+palabras.eliminar<-c("california","via", "amp")
+wordstdelete<-read.csv("C:\\Users\\NICOLAS\\preprocesamiento\\wordstodelete.csv")
+
+#  removemos stopwords en inlés, palabras especificas y hacemos stemming
+corpus1 <- tm_map(corpus1, removeWords, stopwords("english"))
+corpus1 <- tm_map(corpus1, removeWords, palabras.eliminar)
+corpus1 <- tm_map(corpus1, stemDocument,language = "english")
+corpus1 <- tm_map(corpus1, stripWhitespace)
+corpus1 <- tm_map(corpus1, removeWords, wordstdelete$a)
+
+corpus2 <- tm_map(corpus2, removeWords, stopwords("english"))
+corpus2 <- tm_map(corpus2, removeWords, palabras.eliminar)
+corpus2 <- tm_map(corpus2, stemDocument,language = "english")
+corpus2 <- tm_map(corpus2, stripWhitespace)
+corpus2 <- tm_map(corpus2, removeWords, wordstdelete$a)
+
+corpus3 <- tm_map(corpus3, removeWords, stopwords("english"))
+corpus3 <- tm_map(corpus3, removeWords, palabras.eliminar)
+corpus3 <- tm_map(corpus3, stemDocument,language = "english")
+corpus3 <- tm_map(corpus3, stripWhitespace)
+corpus3 <- tm_map(corpus3, removeWords, wordstdelete$a)
+
+corpus4 <- tm_map(corpus4, removeWords, stopwords("english"))
+corpus4 <- tm_map(corpus4, removeWords, palabras.eliminar)
+corpus4 <- tm_map(corpus4, stemDocument,language = "english")
+corpus4 <- tm_map(corpus4, stripWhitespace)
+corpus4 <- tm_map(corpus4, removeWords, wordstdelete$a)
+
+#paso 5: visualizamos los resultados en una nube de palabras
+
+nubepalabras<-wordcloud(corpus1, max.words = 15, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus2, max.words = 20, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus3, max.words = 30, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+nubepalabras<-wordcloud(corpus4, max.words = 22, random.order = F, colors = brewer.pal(name = "Dark2", n = 8))
+
+#' paso 6: se crean tdm para cada corpus
+
+tdm1<- TermDocumentMatrix(corpus1)
+tdmat1 <- as.matrix(tdm1)
+palabrastdmat1<- rowSums(tdmat1)
+palabrastdmat1<- sort(x = palabrastdmat1,decreasing = TRUE)
+palabrastdmat1 <- data.frame(palabra = names(palabrastdmat1), frec = palabrastdmat1)
+palabrastdmat1[1:20, ]
+
+tdm2<- TermDocumentMatrix(corpus2)
+tdmat2 <- as.matrix(tdm2)
+palabrastdmat2<- rowSums(tdmat2)
+palabrastdmat2<- sort(x = palabrastdmat2,decreasing = TRUE)
+palabrastdmat2 <- data.frame(palabra = names(palabrastdmat2), frec = palabrastdmat2)
+palabrastdmat2[1:20, ]
+
+tdm3<- TermDocumentMatrix(corpus3)
+tdmat3 <- as.matrix(tdm3)
+palabrastdmat3<- rowSums(tdmat3)
+palabrastdmat3<- sort(x = palabrastdmat3,decreasing = TRUE)
+palabrastdmat3 <- data.frame(palabra = names(palabrastdmat3), frec = palabrastdmat3)
+palabrastdmat3[1:20, ]
+
+tdm4<- TermDocumentMatrix(corpus4)
+tdmat4 <- as.matrix(tdm4)
+palabrastdmat4<- rowSums(tdmat4)
+palabrastdmat4<- sort(x = palabrastdmat4,decreasing = TRUE)
+palabrastdmat4 <- data.frame(palabra = names(palabrastdmat4), frec = palabrastdmat4)
+palabrastdmat4[1:20, ]
+
+#Paso 7: obtener histogramas
+
+grafico1 <- ggplot(subset(palabrastdmat1, frec >= 8), aes(palabra, frec))
+grafico1 <-
+  grafico1 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour = I("black")))
+grafico1 <-   grafico1 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1  ))
+grafico1
+
+
+grafico2 <- ggplot(subset(palabrastdmat2, frec >= 151), aes(palabra, frec))
+grafico2 <-
+  grafico2 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour = I("black")))
+grafico2 <-   grafico2 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1  ))
+grafico2
+
+
+
+grafico3 <- ggplot(subset(palabrastdmat3, frec >= 65), aes(palabra, frec))
+grafico3 <-
+  grafico3 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico3 <-
+  grafico3 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1   ))
+grafico3
+
+
+grafico4 <- ggplot(subset(palabrastdmat4, frec >= 90), aes(palabra, frec))
+grafico4 <-
+  grafico4 + geom_bar(stat = "identity", position = "identity", aes(fill = I("gold"), colour =
+                                                                      I("black")))
+grafico4 <-
+  grafico4 + theme(axis.text.x = element_text(
+    size = rel(2),
+    angle = 45,
+    hjust = 1   ))
+grafico4
