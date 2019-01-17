@@ -1,0 +1,58 @@
+## ---- EVALUACIÓN DE MODELOS DE APRENDIZAJE NO SUPERVISADO PARA EL ANÁLISIS DE CONTENIDO DE TWEETS GENERADOS ANTE UN DESASTRE ---##
+## El siguiente script muestra el proceso utilizado para la ejución del algoritmo K-means
+
+
+#Paso 1: importamos el data frame elaborado en la etapa de preprocesamiento
+
+# Paso 2: determinamos el número óptimo de Clusters:
+#Silhouette method
+a<-fviz_nbclust(dfa, kmeans, method = "silhouette", k.max = 20)+ 
+  labs(subtitle = "Silhouette method")
+a
+
+#' paso 3: Se obtiene el kmeans para su respectivo análisis de grupos
+
+distancias1 <- dist(dfa, method = "manhattan")
+save(distancias1,file = "distancias1wildfires.Rdata")
+
+res <- kmeans(distancias1, 2, algorithm = "MacQueen", nst, iter.max = 100) #colocamos el k que salió en el paso anterior
+res
+res$size #mirar el tamaño de cada cluster
+res$betweenss
+res$totss
+save(res,file = "Resultado kmeanswildfire.Rdata")
+
+#paso 4: Se gráfican los resultados:
+
+clusplot(
+  as.matrix(distancias1),
+  main =  " ",
+  res$cluster,
+  color = T,
+  shade = T,
+  labels = 0,
+  lines = 0,
+  col.clus = c ("steelblue", "darkred")[res$cluster],
+  col.p = c ("steelblue", "darkred")[res$cluster],
+  col.txt = c("steelblue", "darkred")[res$cluster],
+  cex.txt = 0.9
+)
+
+#visualizacion de los clusters de kmeans
+#Lo saque del libro de practical guide...
+# grafica <- fviz_cluster(res, data = dfa,
+#                         ellipse.type = "euclid", # Concentration ellipse
+#                         star.plot = FALSE, # Add segments from centroids to items
+#                         repel = FALSE, # Avoid label overplotting (slow)
+#                         ggtheme = theme_minimal(),ellipse = FALSE
+#                         )
+
+
+#Paso 5: Exportamos los resultados en un archivo .csv
+
+textoclean2 = textoclean
+textoclean2 = as.character(unlist(textoclean2))
+textolimpiado = textoclean2[as.numeric(rownames(x = dtmatrix))]
+class(textolimpiado)<- "character"
+datosFin =data.frame(textolimpiado, res$cluster)
+save(datosFin,file = "Resultadokmeans en data framewildfire.Rdata")
