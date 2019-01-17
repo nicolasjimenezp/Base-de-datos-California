@@ -1,0 +1,91 @@
+## ---- Evaluación de modelos de aprendizaje no supervisado para el análisis de contenido de tweets generados ante un desastre ---##
+## El siguiente script muestra el proceso utilizado para la limpieza de la base de datos de los incendios forestales de California 2018
+
+library(factoextra)
+library(bitops)
+library(RCurl)
+library(twitteR)
+library(NLP)
+library(tm)
+library(ggplot2)
+library(Rcpp)
+library(RColorBrewer)
+library(readr)
+library(base)
+library(cluster)
+library(NbClust)
+library(wordcloud)
+library(SnowballC)
+library(dplyr)
+##---------------------------------------------------------------
+#--------------------------A) PREPROCESAMIENTO---------------------------#
+
+# paso 1: importar datos con la función
+load("C:/Users/Nicolás/California2.Rdata")
+View(head(rt))
+
+#tomamos una muestra de los tweets de idioma Inglés
+summary(as.factor(dat2$lang)) #para ver que lenguajes existen en la base de datos
+mufire <- dat2[dat2$lang=="en",]
+View(head(muAvalanche))
+
+# paso 2: seleccionar el texto de los tweets
+texto <- mufire$text
+texto<- iconv(texto, 'UTF-8', 'ASCII')
+
+# paso 3: limpiar los datos de elementos no deseados
+
+textoclean <- lapply(texto, function(sentence){
+  sentence <- gsub("@\\w+", "", sentence)
+  sentence <- gsub("#\\w+", "", sentence)
+  sentence <- gsub(".w+", "", sentence)
+  sentence <- gsub("https//t.co/w+", "", sentence)
+  sentence <- gsub("http[[:alnum:][:punct:]]*", "",sentence)
+  sentence <- gsub("[[:digit:]]", "",sentence)
+  sentence <- gsub("[[:punct:]]", "",sentence)
+  sentence <- gsub("[[:cntrl:]]", "",sentence)
+  sentence <- tolower(sentence) #para pasar a minusculas #nuevo 
+  sentence <- stripWhitespace (sentence)
+})
+
+#3.1 eliminamos los tweets repetidos
+textoclean <- unique(textoclean)
+
+#3.2 Eliminamos los tweets vacios
+textoclean<-textoclean[!is.na(textoclean)]
+save(textoclean,file = "textoclean.Rdata")
+
+# paso 4: se construye un corpus
+corpus <- Corpus(VectorSource(textoclean))
+View(head(corpus))
+
+# paso 5: tokenizar los corpus
+palabras.eliminar<-c("california","via", "amp")
+wordstodelete<-read.csv("C:/Users/NICOLAS/PROYECTO DE GRADO/preprocesamiento/wordstodelete.csv")
+
+# 5.1 removemos stopwords en español, palabras especificas y hacemos stemming
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, removeWords, palabras.eliminar)
+corpus <- tm_map(corpus, stemDocument,language = "english")
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeWords, wordstodelete$a)
+
+
+# Paso 6: La representación transforma el corpus de documentos a un espacio vectorial para procesarlos
+
+dtm <-
+  DocumentTermMatrix(corpus, control = list(weighting = weightTfIdf))
+
+#si se encuentra que hay empty documents, entonces correr este codigo
+ui = unique(dtm$i)
+dtm.new = dtm[ui,]
+inspect(dtm.new)
+save(dtm.new, file =  "dtmcalifornia.Rdata")
+
+#Pasamos el dtm como matriz
+dtmatrix <- as.matrix(dtm.new)
+save(dtmatrix,file = "dtmmatrizcalifornia.Rdata")
+
+# se crea el data frame
+dfa <- data.frame(dtmatrix)
+save(dfa,file = "dfacalifornia.Rdata")
