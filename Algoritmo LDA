@@ -115,16 +115,3 @@ write.table(
   sep = "/"
 )
 
-
-topicsProb <- topics(modelGibbs,1)
-topic1tweets<- which (topicsProb==1)
-topic1tweetstext<-as.list(textolimpiadolda[topic1tweets])
-
-write.csv (
-  topic1tweetstext, "ppp.csv")
-
-probabilidadtweets1= data.frame(topic1tweets)
-
-
-
-
