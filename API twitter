@@ -1,0 +1,42 @@
+library(rtweet)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(gmodels)
+library(tm)
+library(e1071)
+library(factoextra)
+library(wordcloud)
+library(cluster)
+library(RColorBrewer)
+library(NLP)
+library(openssl)
+library(curl)
+library(readxl)
+library(laply)
+library(SnowballC)
+
+consumer_key = "XXXXX"
+
+consumer_secret = "XXXXXXXX"
+
+create_token(app = "", consumer_key =  consumer_key ,consumer_secret = consumer_secret, set_renv = TRUE)
+  
+
+##descarga de Datos de California #####     
+dat2  <- search_tweets("#California", n=100000, include_rts = F, retryonratelimit = T) ##words
+
+##unir los dataframe 
+TESPAÑOL <- bind_rows(dat2)
+
+
+###Eliminamos los duplicados.
+re <- unique(rt)
+
+
+rt<-data.frame(re[!duplicated(re), ])
+save(rt, file = "base de datos califotnia.Rdata")
+
+
