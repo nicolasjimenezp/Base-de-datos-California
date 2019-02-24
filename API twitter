@@ -26,17 +26,11 @@ create_token(app = "", consumer_key =  consumer_key ,consumer_secret = consumer_
   
 
 ##descarga de Datos de California #####     
+dat1  <- search_tweets("#CampFire", include_rts = F, retryonratelimit = T) ##words 
 dat2  <- search_tweets("#California", n=100000, include_rts = F, retryonratelimit = T) ##words
+dat3  <- search_tweets("#Woolseyfire", n=100000,include_rts = F, retryonratelimit = T) ##words
+dat4  <- search_tweets("#Hillfire", n=100000, include_rts = F, retryonratelimit = T) ##words
 
 ##unir los dataframe 
-TESPAÑOL <- bind_rows(dat2)
-
-
-###Eliminamos los duplicados.
-re <- unique(rt)
-
-
-rt<-data.frame(re[!duplicated(re), ])
-save(rt, file = "base de datos califotnia.Rdata")
-
-
+Ultimo <- bind_rows(dat,dat1,dat2,dat3, dat4)
+save(Ultimo, file = "Ultimo.Rdata")
