@@ -15,7 +15,7 @@ a
 distancias1 <- dist(dfa, method = "manhattan")
 save(distancias1,file = "distancias1wildfires.Rdata")
 
-res <- kmeans(distancias1, 2, algorithm = "MacQueen", nst, iter.max = 100) #colocamos el k que salió en el paso anterior
+res <- kmeans(distancias1, 4, algorithm = "MacQueen", nst, iter.max = 100) #colocamos el k que salió en el paso anterior
 res
 res$size #mirar el tamaño de cada cluster
 res$betweenss
