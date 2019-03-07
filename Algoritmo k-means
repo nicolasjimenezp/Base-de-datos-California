@@ -20,7 +20,7 @@ res
 res$size #mirar el tamaño de cada cluster
 res$betweenss
 res$totss
-save(res,file = "Resultado kmeanswildfire.Rdata")
+save(res,file = "Resultado kmeanscalifornia.Rdata")
 
 #paso 4: Se gráfican los resultados:
 
