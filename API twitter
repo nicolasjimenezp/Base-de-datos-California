@@ -26,7 +26,7 @@ create_token(app = "", consumer_key =  consumer_key ,consumer_secret = consumer_
   
 
 ##descarga de Datos de California #####     
-dat1  <- search_tweets("#CampFire", include_rts = F, retryonratelimit = T) ##words 
+dat1  <- search_tweets("#CampFire", n=100000, include_rts = F, retryonratelimit = T) ##words 
 dat2  <- search_tweets("#California", n=100000, include_rts = F, retryonratelimit = T) ##words
 dat3  <- search_tweets("#Woolseyfire", n=100000,include_rts = F, retryonratelimit = T) ##words
 dat4  <- search_tweets("#Hillfire", n=100000, include_rts = F, retryonratelimit = T) ##words
